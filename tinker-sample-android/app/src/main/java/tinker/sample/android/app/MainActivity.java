@@ -18,12 +18,15 @@ package tinker.sample.android.app;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -31,6 +34,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -41,6 +47,10 @@ import com.tencent.tinker.lib.tinker.TinkerInstaller;
 import com.tencent.tinker.loader.shareutil.ShareConstants;
 import com.tencent.tinker.loader.shareutil.ShareTinkerInternals;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+
 import tinker.sample.android.R;
 import tinker.sample.android.util.Utils;
 
@@ -48,6 +58,12 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "Tinker.MainActivity";
 
     private TextView mTvMessage = null;
+
+    private static final int REQUEST_CODE_GET_FILE = 1001;
+
+    private static void showToast(Context context){
+        Toast.makeText(context, "你好7", Toast.LENGTH_SHORT).show();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,17 +75,51 @@ public class MainActivity extends AppCompatActivity {
         //test resource change
         Log.e(TAG, "i am on onCreate string:" + getResources().getString(R.string.test_resource));
 //        Log.e(TAG, "i am on patch onCreate");
-
+        showToast(this);
         mTvMessage = findViewById(R.id.tv_message);
 
         askForRequiredPermissions();
 
+        findViewById(R.id.testFuncConsume).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                OatOptimizationTest.test(MainActivity.this);
+            }
+        });
+
+        findViewById(R.id.testFuncConsume1).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                OatOptimizationTestInPatch.test(MainActivity.this);
+            }
+        });
+
         Button loadPatchButton = (Button) findViewById(R.id.loadPatch);
+
+        loadingDialog = new LoadingDialog(this);
+
+        // 创建 IntentFilter 并注册接收器
+        IntentFilter intentFilter = new IntentFilter("PATCH_LOADED_BROADCAST");
+        registerReceiver(new BroadcastReceiver()
+        {
+            @Override
+            public void onReceive(Context context, Intent intent)
+            {
+                loadingDialog.dismissLoading();
+            }
+        }, intentFilter);
 
         loadPatchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                TinkerInstaller.onReceiveUpgradePatch(getApplicationContext(), Environment.getExternalStorageDirectory().getAbsolutePath() + "/patch_signed_7zip.apk");
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("*/*"); // 可根据需求设置特定文件类型
+                startActivityForResult(intent, REQUEST_CODE_GET_FILE);
             }
         });
 
@@ -118,6 +168,58 @@ public class MainActivity extends AppCompatActivity {
                 showInfo(MainActivity.this);
             }
         });
+    }
+
+    private LoadingDialog loadingDialog;
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
+    {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE_GET_FILE){
+            if (data != null) {
+                Uri fileUri = data.getData();
+                //将fileUri拷贝到应用内的files/tinker_patch/下
+                // 定义目标路径：将文件拷贝到应用内的 files/tinker_patch/ 目录下
+                File patchFile = new File(getApplication().getFilesDir().getAbsolutePath() + "/tinker_patch/patch_signed.apk");
+                patchFile.getParentFile().mkdirs();
+                // 将选中的文件拷贝到目标路径
+                copyUriToFile(fileUri, patchFile.getAbsolutePath());
+                // 调用 TinkerInstaller 执行补丁文件升级
+                TinkerInstaller.onReceiveUpgradePatch(
+                        this,
+                        patchFile.getAbsolutePath() // 使用拷贝后的补丁文件路径
+                );
+                loadingDialog.showLoading("加载补丁文件...");
+            }
+        }
+    }
+
+    private void copyUriToFile(Uri fileUri, String destinationPath) {
+        try {
+            InputStream inputStream = this.getApplicationContext().getContentResolver().openInputStream(fileUri);
+            FileOutputStream outputStream = new FileOutputStream(new File(destinationPath));
+            byte[] buffer = new byte[1024];
+
+            while(true) {
+                Integer var7 = inputStream != null ? inputStream.read(buffer) : null;
+                int bytesRead = var7 != null ? var7 : -1;
+                byte var13 = -1;
+                if (var7 != null) {
+                    if (var7 == var13) {
+                        inputStream.close();
+
+                        outputStream.close();
+                        break;
+                    }
+                }
+
+                outputStream.write(buffer, 0, bytesRead);
+            }
+        } catch (Exception var10) {
+            var10.printStackTrace();
+        }
+
     }
 
     private void askForRequiredPermissions() {

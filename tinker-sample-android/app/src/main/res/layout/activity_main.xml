@@ -68,4 +68,22 @@
         android:layout_alignParentStart="true"
         android:layout_below="@+id/killSelf"
         android:text="show info"/>
+
+    <Button
+        android:id="@+id/testFuncConsume"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/showInfo"
+        android:text="func counsume test"/>
+
+    <Button
+        android:id="@+id/testFuncConsume1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/testFuncConsume"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:text="func counsume test in_patch" />
 </RelativeLayout>

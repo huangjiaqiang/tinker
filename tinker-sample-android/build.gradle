@@ -2,12 +2,16 @@
 buildscript {
     repositories {
         mavenLocal()
+        maven{
+            url "https://maven.aliyun.com/nexus/content/groups/public/"
+        }
         jcenter()
         google()
     }
     dependencies {
         if (project.hasProperty('GRADLE_3') && GRADLE_3.equalsIgnoreCase('TRUE')) {
             classpath 'com.android.tools.build:gradle:3.5.3'
+            classpath 'com.android.tools:r8:8.5.35'
         } else {
             classpath 'com.android.tools.build:gradle:2.3.3'
         }
@@ -25,6 +29,9 @@ buildscript {
 allprojects {
     repositories {
         mavenLocal()
+        maven{
+            url "https://maven.aliyun.com/nexus/content/groups/public/"
+        }
         jcenter()
         google()
     }

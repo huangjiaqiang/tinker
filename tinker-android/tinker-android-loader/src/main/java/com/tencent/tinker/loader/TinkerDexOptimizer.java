@@ -191,7 +191,7 @@ public final class TinkerDexOptimizer {
                                         if (!useEmergencyMode) {
                                             final String vdexPath = optimizedPath.substring(0,
                                                     optimizedPath.lastIndexOf(ODEX_SUFFIX)) + VDEX_SUFFIX;
-                                            waitUntilFileGeneratedOrTimeout(context, vdexPath);
+                                            waitUntilFileGeneratedOrTimeout(context, vdexPath, 2000L);
                                         }
                                     }
                                 }
@@ -271,7 +271,7 @@ public final class TinkerDexOptimizer {
         }
 
         final File dexFile = new File(dexPath);
-        for (int i = 0; i < 10; ++i) {
+        for (int i = 0; i < 3; ++i) {
             if (triggerSecondaryDexOpt(context, dexFile, oatFile, true)) {
                 return;
             }

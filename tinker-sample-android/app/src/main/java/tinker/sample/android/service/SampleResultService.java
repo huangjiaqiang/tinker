@@ -16,6 +16,7 @@
 
 package tinker.sample.android.service;
 
+import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.Toast;
@@ -58,6 +59,10 @@ public class SampleResultService extends DefaultTinkerResultService {
                 } else {
                     Toast.makeText(getApplicationContext(), "patch fail, please check reason", Toast.LENGTH_LONG).show();
                 }
+                // 创建一个 Intent，设置唯一的 Action
+                Intent intent = new Intent("PATCH_LOADED_BROADCAST");
+                intent.putExtra("message", "Hello from BroadcastSenderActivity!");
+                sendBroadcast(intent); // 发送广播
             }
         });
         // is success and newPatch, it is nice to delete the raw file, and restart at once
