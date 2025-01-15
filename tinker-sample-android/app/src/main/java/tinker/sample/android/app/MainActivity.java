@@ -190,6 +190,12 @@ public class MainActivity extends AppCompatActivity {
                         this,
                         patchFile.getAbsolutePath() // 使用拷贝后的补丁文件路径
                 );
+                int rc = Tinker.with(this).getPatchListener().onPatchReceived(patchFile.getAbsolutePath());
+                if (rc != 0){
+                    Toast.makeText(this, "加载失败："+rc, Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 loadingDialog.showLoading("加载补丁文件...");
             }
         }

@@ -10,9 +10,9 @@ dependencies {
         // Maven local cannot handle transist dependencies.
         implementation("com.tencent.tinker:tinker-android-loader:${TINKER_VERSION}") { changing = true }
 
-        annotationProcessor("com.tencent.tinker:tinker-android-anno:${TINKER_VERSION}") { changing = true }
-        compileOnly("com.tencent.tinker:tinker-android-anno:${TINKER_VERSION}") { changing = true }
-        compileOnly("com.tencent.tinker:tinker-android-anno-support:${TINKER_VERSION}") { changing = true }
+//        annotationProcessor("com.tencent.tinker:tinker-android-anno:${TINKER_VERSION}") { changing = true }
+//        compileOnly("com.tencent.tinker:tinker-android-anno:${TINKER_VERSION}") { changing = true }
+//        compileOnly("com.tencent.tinker:tinker-android-anno-support:${TINKER_VERSION}") { changing = true }
 
         implementation "androidx.multidex:multidex:2.0.1"
         //use to test multiDex
@@ -23,8 +23,8 @@ dependencies {
         testCompile 'junit:junit:4.12'
         compile "androidx.appcompat:appcompat:1.1.0"
         compile("com.tencent.tinker:tinker-android-lib:${TINKER_VERSION}") { changing = true }
-        provided("com.tencent.tinker:tinker-android-anno:${TINKER_VERSION}") { changing = true }
-        provided("com.tencent.tinker:tinker-android-anno-support:${TINKER_VERSION}") { changing = true }
+//        provided("com.tencent.tinker:tinker-android-anno:${TINKER_VERSION}") { changing = true }
+//        provided("com.tencent.tinker:tinker-android-anno-support:${TINKER_VERSION}") { changing = true }
 
         compile "androidx.multidex:multidex:2.0.1"
 
@@ -305,7 +305,7 @@ if (buildWithTinker()) {
              * if you want to support below 14, you must use jar
              * or you want to save rom or check quicker, you can use raw mode also
              */
-            dexMode = "jar"
+            dexMode = "raw"
 
             /**
              * necessary，default '[]'

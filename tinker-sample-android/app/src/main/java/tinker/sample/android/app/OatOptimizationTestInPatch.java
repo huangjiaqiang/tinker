@@ -17,7 +17,7 @@ public class OatOptimizationTestInPatch
         performComputation(iterations);
         long endTime = System.nanoTime();
 
-        String msg = "4Execution time in patch: " + (endTime - startTime) + " ns";
+        String msg = "Execution time in patch: " + (endTime - startTime) + " ns";
         System.out.println(msg);
         Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
     }
