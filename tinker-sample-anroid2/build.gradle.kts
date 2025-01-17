@@ -1,0 +1,19 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+plugins {
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.kotlin.android) apply false
+}
+
+buildscript {
+    repositories {
+        mavenLocal()
+        maven(url="https://maven.aliyun.com/nexus/content/groups/public/")
+        mavenCentral()
+        google()
+    }
+    dependencies {
+        classpath("com.tencent.tinker:tinker-patch-gradle-plugin:${project.findProperty("TINKER_VERSION")}"){
+            isChanging = true
+        }
+    }
+}

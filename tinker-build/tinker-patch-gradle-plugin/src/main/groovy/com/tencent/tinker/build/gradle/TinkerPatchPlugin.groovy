@@ -53,17 +53,18 @@ class TinkerPatchPlugin implements Plugin<Project> {
             mProject.apply plugin: 'com.google.osdetector'
         }
 
-        mProject.extensions.create('tinkerPatch', TinkerPatchExtension)
-
-        mProject.tinkerPatch.extensions.create('buildConfig', TinkerBuildConfigExtension, mProject)
-
-        mProject.tinkerPatch.extensions.create('dex', TinkerDexExtension, mProject)
-        mProject.tinkerPatch.extensions.create('lib', TinkerLibExtension)
-        mProject.tinkerPatch.extensions.create('res', TinkerResourceExtension)
-        mProject.tinkerPatch.extensions.create("arkHot", TinkerArkHotExtension)
-        mProject.tinkerPatch.extensions.create('packageConfig', TinkerPackageConfigExtension, mProject)
-        mProject.tinkerPatch.extensions.create('sevenZip', TinkerSevenZipExtension, mProject)
-
+        mProject.extensions.create('tinkerPatch', TinkerPatchExtension, project)
+//        mProject.tinkerPatch.extensions.create('buildConfig', TinkerBuildConfigExtension, mProject)
+//        mProject.tinkerPatch.extensions.create('dex', TinkerDexExtension, mProject)
+//        mProject.tinkerPatch.extensions.create('lib', TinkerLibExtension)
+//        mProject.tinkerPatch.extensions.create('res', TinkerResourceExtension)
+//        mProject.tinkerPatch.extensions.create("arkHot", TinkerArkHotExtension)
+//        mProject.tinkerPatch.extensions.create('packageConfig', TinkerPackageConfigExtension, mProject)
+//        mProject.tinkerPatch.extensions.create('sevenZip', TinkerSevenZipExtension, mProject)
+        if (mProject.extensions.tinkerPatch.buildConfig == null){
+            println("xxxxxxxx1")
+        }
+        println("xxxxxxxx3")
         if (!mProject.plugins.hasPlugin('com.android.application')) {
             throw new GradleException('generateTinkerApk: Android Application plugin required')
         }
@@ -84,7 +85,6 @@ class TinkerPatchPlugin implements Plugin<Project> {
         } catch (Throwable e) {
             //no preDexLibraries field, just continue
         }
-
         mProject.afterEvaluate {
             def configuration = mProject.tinkerPatch
 
