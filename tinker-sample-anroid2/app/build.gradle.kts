@@ -158,47 +158,215 @@ fun getTinkerBuildFlavorDirectory(): String {
 
 if (buildWithTinker()) {
     apply(plugin = "com.tencent.tinker.patch")
+
+
     configure<com.tencent.tinker.build.gradle.extension.TinkerPatchExtension> {
+        /**
+         * necessary，default 'null'
+         * the old apk path, use to diff with the new apk to build
+         * add apk from the build/bakApk
+         */
         oldApk = getOldApkPath()
+        oldApk = getOldApkPath()
+        /**
+         * optional，default 'false'
+         * there are some cases we may get some warnings
+         * if ignoreWarning is true, we would just assert the patch process
+         * case 1: minSdkVersion is below 14, but you are using dexMode with raw.
+         *         it must be crash when load.
+         * case 2: newly added Android Component in AndroidManifest.xml,
+         *         it must be crash when load.
+         * case 3: loader classes in dex.loader{} are not keep in the main dex,
+         *         it must be let tinker not work.
+         * case 4: loader classes in dex.loader{} changes,
+         *         loader classes is ues to load patch dex. it is useless to change them.
+         *         it won't crash, but these changes can't effect. you may ignore it
+         * case 5: resources.arsc has changed, but we don't use applyResourceMapping to build
+         */
         ignoreWarning = ext["ignoreWarning"] as Boolean
+
+        /**
+         * optional，default 'true'
+         * whether sign the patch file
+         * if not, you must do yourself. otherwise it can't check success during the patch loading
+         * we will use the sign config with your build type
+         */
         useSign = true
+
+        /**
+         * optional，default 'true'
+         * whether use tinker to build
+         */
         tinkerEnable = buildWithTinker()
 
+        /**
+         * Warning, applyMapping will affect the normal android build!
+         */
+        buildConfig{
 
-        buildConfig = TinkerBuildConfigExtension(project).apply {
+            /**
+             * optional，default 'null'
+             * if we use tinkerPatch to build the patch apk, you'd better to apply the old
+             * apk mapping file if minifyEnabled is enable!
+             * Warning:
+             * you must be careful that it will affect the normal assemble build!
+             */
             applyMapping = getApplyMappingPath()
+
+            /**
+             * optional，default 'null'
+             * It is nice to keep the resource id from R.txt file to reduce java changes
+             */
             applyResourceMapping = getApplyResourceMappingPath()
+
+            /**
+             * necessary，default 'null'
+             * because we don't want to check the base apk with md5 in the runtime(it is slow)
+             * tinkerId is use to identify the unique base apk when the patch is tried to apply.
+             * we can use git rev, svn rev or simply versionCode.
+             * we will gen the tinkerId in your manifest automatic
+             */
             tinkerId = getTinkerIdValue()
+
+            /**
+             * if keepDexApply is true, class in which dex refer to the old apk.
+             * open this can reduce the dex diff file size.
+             */
             keepDexApply = false
+
+            /**
+             * optional, default 'false'
+             * Whether tinker should treat the base apk as the one being protected by app
+             * protection tools.
+             * If this attribute is true, the generated patch package will contain a
+             * dex including all changed classes instead of any dexdiff patch-info files.
+             */
             isProtectedApp = ext["isProtectedApp"] as Boolean
+
+            /**
+             * optional, default 'false'
+             * Whether tinker should support component hotplug (add new component dynamically).
+             * If this attribute is true, the component added in new apk will be available after
+             * patch is successfully loaded. Otherwise an error would be announced when generating patch
+             * on compile-time.
+             *
+             * <b>Notice that currently this feature is incubating and only support NON-EXPORTED Activity</b>
+             */
             supportHotplugComponent = false
         }
 
-        dex = TinkerDexExtension(project).apply {
+
+        dex{
+            /**
+             * optional，default 'jar'
+             * only can be 'raw' or 'jar'. for raw, we would keep its original format
+             * for jar, we would repack dexes with zip format.
+             * if you want to support below 14, you must use jar
+             * or you want to save rom or check quicker, you can use raw mode also
+             */
             dexMode = "raw"
+
+            /**
+             * necessary，default '[]'
+             * what dexes in apk are expected to deal with tinkerPatch
+             * it support * or ? pattern.
+             */
             pattern = mutableSetOf("classes*.dex", "assets/secondary-dex-?.jar")
+
+            /**
+             * necessary，default '[]'
+             * Warning, it is very very important, loader classes can't change with patch.
+             * thus, they will be removed from patch dexes.
+             * you must put the following class into main dex.
+             * Simply, you should add your own application {@code tinker.sample.android.SampleApplication}
+             * own tinkerLoader, and the classes you use in them
+             *
+             */
             loader = mutableSetOf("tinker.sample.android.app.BaseBuildInfo")
         }
 
-        lib = TinkerLibExtension().apply{
+
+        lib{
+            /**
+             * optional，default '[]'
+             * what library in apk are expected to deal with tinkerPatch
+             * it support * or ? pattern.
+             * for library in assets, we would just recover them in the patch directory
+             * you can get them in TinkerLoadResult with Tinker
+             */
             pattern = mutableSetOf("lib/*/*.so")
         }
 
 
-        res = TinkerResourceExtension().apply{
+        res{
+            /**
+             * optional，default '[]'
+             * what resource in apk are expected to deal with tinkerPatch
+             * it support * or ? pattern.
+             * you must include all your resources in apk here,
+             * otherwise, they won't repack in the new apk resources.
+             */
             pattern = mutableSetOf("res/*", "assets/*", "resources.arsc", "AndroidManifest.xml")
+
+            /**
+             * optional，default '[]'
+             * the resource file exclude patterns, ignore add, delete or modify resource change
+             * it support * or ? pattern.
+             * Warning, we can only use for files no relative with resources.arsc
+             */
             ignoreChange = mutableSetOf("assets/sample_meta.txt")
+
+            /**
+             * default 100kb
+             * for modify resource, if it is larger than 'largeModSize'
+             * we would like to use bsdiff algorithm to reduce patch file size
+             */
             largeModSize = 100
         }
 
-        arkHot = TinkerArkHotExtension()
-        packageConfig = TinkerPackageConfigExtension(project).apply {
+        packageConfig{
+
+            /**
+             * optional，default 'TINKER_ID, TINKER_ID_VALUE' 'NEW_TINKER_ID, NEW_TINKER_ID_VALUE'
+             * package meta file gen. path is assets/package_meta.txt in patch file
+             * you can use securityCheck.getPackageProperties() in your ownPackageCheck method
+             * or TinkerLoadResult.getPackageConfigByName
+             * we will get the TINKER_ID from the old apk manifest for you automatic,
+             * other config files (such as patchMessage below)is not necessary
+             */
             configField("patchMessage", "tinker is sample to use")
+
+            /**
+             * just a sample case, you can use such as sdkVersion, brand, channel...
+             * you can parse it in the SamplePatchListener.
+             * Then you can use patch conditional!
+             */
             configField("platform", "all")
+
+            /**
+             * patch version via packageConfig
+             */
             configField("patchVersion", "1.0")
         }
 
-        sevenZip = TinkerSevenZipExtension(project).apply {
+        //or you can add config filed outside, or get meta value from old apk
+        //project.tinkerPatch.packageConfig.configField("test1", project.tinkerPatch.packageConfig.getMetaDataFromOldApk("Test"))
+        //project.tinkerPatch.packageConfig.configField("test2", "sample")
+
+        /**
+         * if you don't use zipArtifact or path, we just use 7za to try
+         */
+        sevenZip{
+
+            /**
+             * optional，default '7za'
+             * the 7zip artifact path, it will use the right 7za with your platform
+             */
+//            zipArtifact = "com.tencent.mm:SevenZip:1.1.10"
+            /**
+             * optional，default '7za'
+             * you can specify the 7za path yourself, it will overwrite the zipArtifact value
+             */
             path = "/usr/local/bin/7za"
         }
     }

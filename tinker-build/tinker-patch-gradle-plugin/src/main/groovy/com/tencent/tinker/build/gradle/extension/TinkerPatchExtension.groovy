@@ -16,10 +16,9 @@
 
 package com.tencent.tinker.build.gradle.extension
 
-import com.android.build.gradle.api.AndroidSourceSet
+
 import org.gradle.api.Action
 import org.gradle.api.GradleException
-import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project;
 
 /**
@@ -112,13 +111,13 @@ public class TinkerPatchExtension {
      */
     String customDiffPathArgs
 
-    TinkerBuildConfigExtension buildConfig = new TinkerBuildConfigExtension(this.project)
-    TinkerDexExtension dex = new TinkerDexExtension(this.project)
-    TinkerLibExtension lib = new TinkerLibExtension()
-    TinkerResourceExtension res = new TinkerResourceExtension()
-    TinkerArkHotExtension arkHot = new TinkerArkHotExtension()
-    TinkerPackageConfigExtension packageConfig = new TinkerPackageConfigExtension(this.project)
-    TinkerSevenZipExtension sevenZip = new TinkerSevenZipExtension(this.project)
+    TinkerBuildConfigExtension buildConfig
+    TinkerDexExtension dex
+    TinkerLibExtension lib
+    TinkerResourceExtension res
+    TinkerArkHotExtension arkHot
+    TinkerPackageConfigExtension packageConfig
+    TinkerSevenZipExtension sevenZip
 
     public void buildConfig(Action<TinkerBuildConfigExtension> action){
         action.execute(buildConfig)
@@ -148,10 +147,18 @@ public class TinkerPatchExtension {
         action.execute(sevenZip)
     }
 
-    private Project project
+    Project project
 
     public TinkerPatchExtension(Project project) {
         this.project = project
+        buildConfig = new TinkerBuildConfigExtension(this.project)
+        dex = new TinkerDexExtension(this.project)
+        lib = new TinkerLibExtension()
+        res = new TinkerResourceExtension()
+        arkHot = new TinkerArkHotExtension()
+        packageConfig = new TinkerPackageConfigExtension(this.project)
+        sevenZip = new TinkerSevenZipExtension(this.project)
+
         oldApk = ""
         outputFolder = ""
         newApk = ""

@@ -16,7 +16,7 @@
 #   public *;
 #}
 -keepattributes SourceFile,LineNumberTable
-#-dontoptimize
+-dontoptimize
 -dontwarn com.google.**
 
 -dontwarn com.android.**

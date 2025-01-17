@@ -153,7 +153,6 @@ def runTaskName = gradle.startParameter.taskNames[0]?:""
  * add apk from the build/bakApk
  */
 ext {
-    println("xxxxxxx1")
     //for some reason, you may want to ignore tinkerBuild, such as instant run debug build?
     tinkerEnabled = true
 
