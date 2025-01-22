@@ -61,10 +61,6 @@ class TinkerPatchPlugin implements Plugin<Project> {
 //        mProject.tinkerPatch.extensions.create("arkHot", TinkerArkHotExtension)
 //        mProject.tinkerPatch.extensions.create('packageConfig', TinkerPackageConfigExtension, mProject)
 //        mProject.tinkerPatch.extensions.create('sevenZip', TinkerSevenZipExtension, mProject)
-        if (mProject.extensions.tinkerPatch.buildConfig == null){
-            println("xxxxxxxx1")
-        }
-        println("xxxxxxxx3")
         if (!mProject.plugins.hasPlugin('com.android.application')) {
             throw new GradleException('generateTinkerApk: Android Application plugin required')
         }

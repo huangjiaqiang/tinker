@@ -7,6 +7,19 @@ def checkAndGetOption(name) {
     return project[name]
 }
 
+def loadLocalProperties() {
+    def localProperties = new Properties()
+    def localPropertiesFile = rootProject.file('local.properties')
+    if (localPropertiesFile.exists()) {
+        localPropertiesFile.withReader('UTF-8') { reader ->
+            localProperties.load(reader)
+        }
+    }
+    return localProperties
+}
+
+def localProperties = loadLocalProperties()
+
 wechatPublish {
     pom {
         name = checkAndGetOption('POM_NAME')
@@ -30,5 +43,25 @@ wechatPublish {
                 name = checkAndGetOption('POM_DEVELOPER_NAME')
             }
         }
+    }
+
+    // 添加远程仓库发布配置
+    publishToMaven {
+        def repoUrl = localProperties.getProperty('REPOSITORY_URL')
+        if (!repoUrl) {
+            throw new GradleException('REPOSITORY_URL must be specified in local.properties or as a project property')
+        }
+
+        url = isSnapshot ?
+                "${repoUrl}snapshots/" :
+                "${repoUrl}releases/"
+
+        credentials {
+            username = localProperties.getProperty('MAVEN_USERNAME')
+            password = localProperties.getProperty('MAVEN_PASSWORD')
+        }
+
+        // 允许不安全的协议（如果需要）
+        allowInsecureProtocol = true
     }
 }
